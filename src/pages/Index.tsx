@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty, MealType } from "@/data/meals";
 import CriteriaFilters from "@/components/CriteriaFilters";
 import MealSuggestions from "@/components/MealSuggestions";
 import MealPlanGrid, { PlanSlot, MealPlan, slotKey } from "@/components/MealPlanGrid";
+import GroceryList from "@/components/GroceryList";
 
 interface Filters {
   dietary: Dietary[];
@@ -21,6 +23,7 @@ const Index = () => {
   });
   const [plan, setPlan] = useState<MealPlan>({});
   const [activeSlot, setActiveSlot] = useState<PlanSlot | null>(null);
+  const [groceryOpen, setGroceryOpen] = useState(false);
 
   const filteredMeals = useMemo(() => {
     return meals.filter((m) => {
@@ -78,12 +81,21 @@ const Index = () => {
               {filledCount}/21 meals planned
             </span>
             {filledCount > 0 && (
-              <button
-                onClick={handleClearAll}
-                className="text-sm text-destructive hover:underline"
-              >
-                Clear all
-              </button>
+              <>
+                <button
+                  onClick={() => setGroceryOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-secondary text-secondary-foreground hover:opacity-90 transition-opacity"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Grocery List
+                </button>
+                <button
+                  onClick={handleClearAll}
+                  className="text-sm text-destructive hover:underline"
+                >
+                  Clear all
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -110,6 +122,8 @@ const Index = () => {
           </motion.div>
         </div>
       </main>
+
+      <GroceryList plan={plan} open={groceryOpen} onClose={() => setGroceryOpen(false)} />
     </div>
   );
 };
