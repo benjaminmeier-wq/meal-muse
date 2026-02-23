@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
-import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty, MealType } from "@/data/meals";
+import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty } from "@/data/meals";
 import CriteriaFilters from "@/components/CriteriaFilters";
 import MealSuggestions from "@/components/MealSuggestions";
 import MealPlanGrid, { PlanSlot, MealPlan, slotKey } from "@/components/MealPlanGrid";
@@ -50,11 +50,25 @@ const Index = () => {
   const handleSelectMeal = useCallback(
     (meal: Meal) => {
       if (!activeSlot) return;
-      setPlan((prev) => ({ ...prev, [slotKey(activeSlot.day, activeSlot.mealType)]: meal }));
+      setPlan((prev) => ({ ...prev, [slotKey(activeSlot.day, activeSlot.mealType)]: { meal, servings: 1 } }));
       setActiveSlot(null);
     },
     [activeSlot]
   );
+
+  const handleDropMeal = useCallback((slot: PlanSlot, meal: Meal) => {
+    setPlan((prev) => ({ ...prev, [slotKey(slot.day, slot.mealType)]: { meal, servings: 1 } }));
+    setActiveSlot(null);
+  }, []);
+
+  const handleServingsChange = useCallback((slot: PlanSlot, servings: number) => {
+    setPlan((prev) => {
+      const key = slotKey(slot.day, slot.mealType);
+      const entry = prev[key];
+      if (!entry) return prev;
+      return { ...prev, [key]: { ...entry, servings } };
+    });
+  }, []);
 
   const handleClearAll = () => {
     setPlan({});
@@ -65,7 +79,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <motion.h1
@@ -102,15 +115,20 @@ const Index = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Filters */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <CriteriaFilters filters={filters} onChange={setFilters} />
         </motion.div>
 
-        {/* Grid + Suggestions */}
         <div className="grid lg:grid-cols-[1fr_280px] gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <MealPlanGrid plan={plan} activeSlot={activeSlot} onSlotClick={handleSlotClick} onRemove={handleRemove} />
+            <MealPlanGrid
+              plan={plan}
+              activeSlot={activeSlot}
+              onSlotClick={handleSlotClick}
+              onRemove={handleRemove}
+              onDropMeal={handleDropMeal}
+              onServingsChange={handleServingsChange}
+            />
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
