@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MealPlan } from "@/components/MealPlanGrid";
-import { X, Copy, Check, ShoppingCart } from "lucide-react";
+import { X, Copy, Check, ShoppingCart, Printer } from "lucide-react";
 
 interface GroceryListProps {
   plan: MealPlan;
@@ -17,6 +17,7 @@ interface AggregatedItem {
 export default function GroceryList({ plan, open, onClose }: GroceryListProps) {
   const [copied, setCopied] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [printMode, setPrintMode] = useState(false);
 
   const items = useMemo(() => {
     const map = new Map<string, Map<string, { amount: number; mealNames: Set<string> }>>();
@@ -73,6 +74,21 @@ export default function GroceryList({ plan, open, onClose }: GroceryListProps) {
     return `🛒 Weekly Grocery List\n${"─".repeat(35)}\n${lines.join("\n")}`;
   };
 
+  const escapeHtml = (value: string) =>
+    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const handlePrint = () => {
+    setPrintMode(true);
+  };
+
+  useEffect(() => {
+    if (!printMode) return;
+    const cleanup = () => setPrintMode(false);
+    window.addEventListener("afterprint", cleanup);
+    requestAnimationFrame(() => window.print());
+    return () => window.removeEventListener("afterprint", cleanup);
+  }, [printMode]);
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(exportText());
     setCopied(true);
@@ -88,6 +104,8 @@ export default function GroceryList({ plan, open, onClose }: GroceryListProps) {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const printText = exportText();
 
   return (
     <AnimatePresence>
@@ -122,6 +140,13 @@ export default function GroceryList({ plan, open, onClose }: GroceryListProps) {
             </div>
 
             <div className="flex gap-2 px-5 py-3 border-b border-border">
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-background border border-border hover:bg-muted transition-colors"
+              >
+                <Printer className="w-4 h-4" />
+                Print
+              </button>
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
@@ -182,6 +207,12 @@ export default function GroceryList({ plan, open, onClose }: GroceryListProps) {
               )}
             </div>
           </motion.div>
+          {printMode && (
+            <div className="print-only">
+              <h1>Grocery List</h1>
+              <pre>{printText}</pre>
+            </div>
+          )}
         </>
       )}
     </AnimatePresence>

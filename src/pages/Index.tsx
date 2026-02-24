@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { Moon, ShoppingCart, Sun } from "lucide-react";
 import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty } from "@/data/meals";
 import CriteriaFilters from "@/components/CriteriaFilters";
 import MealSuggestions from "@/components/MealSuggestions";
@@ -15,6 +15,12 @@ interface Filters {
 }
 
 const Index = () => {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    const stored = window.localStorage.getItem("meal-muse-theme");
+    if (stored === "light" || stored === "dark") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
   const [filters, setFilters] = useState<Filters>({
     dietary: [],
     cuisines: [],
@@ -77,10 +83,20 @@ const Index = () => {
 
   const filledCount = Object.values(plan).filter(Boolean).length;
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    window.localStorage.setItem("meal-muse-theme", theme);
+  }, [theme]);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mr-auto px-4 py-4 flex flex-wrap items-center gap-4">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -89,7 +105,16 @@ const Index = () => {
           >
             🥘 Mealwise
           </motion.h1>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition hover:bg-muted"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === "dark" ? "Light" : "Dark"}
+            </button>
             <span className="text-sm text-muted-foreground">
               {filledCount}/21 meals planned
             </span>
@@ -114,24 +139,31 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <CriteriaFilters filters={filters} onChange={setFilters} />
-        </motion.div>
+      <main className="max-w-7xl mr-auto px-4 py-5">
+        <div className="grid xl:grid-cols-[minmax(0,1fr)_300px] gap-3 items-start">
+          <div className="space-y-4 min-w-0">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <CriteriaFilters filters={filters} onChange={setFilters} />
+            </motion.div>
 
-        <div className="grid lg:grid-cols-[1fr_280px] gap-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <MealPlanGrid
-              plan={plan}
-              activeSlot={activeSlot}
-              onSlotClick={handleSlotClick}
-              onRemove={handleRemove}
-              onDropMeal={handleDropMeal}
-              onServingsChange={handleServingsChange}
-            />
-          </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <MealPlanGrid
+                plan={plan}
+                activeSlot={activeSlot}
+                onSlotClick={handleSlotClick}
+                onRemove={handleRemove}
+                onDropMeal={handleDropMeal}
+                onServingsChange={handleServingsChange}
+              />
+            </motion.div>
+          </div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="xl:sticky xl:top-16"
+          >
             <MealSuggestions
               meals={filteredMeals}
               onSelect={handleSelectMeal}

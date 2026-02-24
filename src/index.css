@@ -84,3 +84,27 @@
     font-family: var(--font-display);
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-only, .print-only * {
+    visibility: visible;
+  }
+  .print-only {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+    color: #111;
+    background: #fff;
+  }
+  .print-only h1 {
+    margin: 0 0 12px;
+  }
+  .print-only pre {
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}

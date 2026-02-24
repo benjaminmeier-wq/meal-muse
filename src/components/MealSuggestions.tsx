@@ -17,14 +17,14 @@ export default function MealSuggestions({ meals, onSelect, activeMealType }: Mea
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
         🍽️ Suggestions {activeMealType && <span className="text-primary capitalize">for {activeMealType}</span>}
       </h2>
       {!activeMealType && (
         <p className="text-sm text-muted-foreground">Click a slot or drag a meal into your plan</p>
       )}
-      <div className="grid gap-2 max-h-[60vh] overflow-y-auto pr-1">
+      <div className="grid gap-2 max-h-[62vh] overflow-y-auto pr-1">
         <AnimatePresence mode="popLayout">
           {filtered.length === 0 && (
             <p className="text-sm text-muted-foreground py-4 text-center">No meals match your filters. Try adjusting your preferences!</p>
