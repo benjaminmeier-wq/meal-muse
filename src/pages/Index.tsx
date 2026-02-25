@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Moon, ShoppingCart, Sun } from "lucide-react";
-import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty } from "@/data/meals";
+import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty, DAYS, MEAL_TYPES } from "@/data/meals";
 import CriteriaFilters from "@/components/CriteriaFilters";
 import MealSuggestions from "@/components/MealSuggestions";
 import MealPlanGrid, { PlanSlot, MealPlan, slotKey } from "@/components/MealPlanGrid";
@@ -13,6 +13,27 @@ interface Filters {
   cookTimes: CookTime[];
   difficulties: Difficulty[];
 }
+
+const ESTIMATED_INGREDIENT_COST: Record<string, number> = {
+  rice: 0.45,
+  spaghetti: 0.6,
+  eggs: 0.45,
+  onion: 0.4,
+  garlic: 0.2,
+  "canned tomatoes": 1.2,
+  "black beans": 1.1,
+  chickpeas: 1.1,
+  carrots: 0.35,
+  "bell pepper": 0.9,
+  "chicken breast": 2.2,
+  "olive oil": 0.25,
+  "soy sauce": 0.2,
+  cilantro: 0.4,
+  salsa: 0.6,
+  potatoes: 0.6,
+};
+
+const normalizeIngredient = (name: string) => name.trim().toLowerCase();
 
 const Index = () => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -40,6 +61,37 @@ const Index = () => {
       return true;
     });
   }, [filters]);
+
+  const rankedMeals = useMemo(() => {
+    const plannedIngredients = new Set(
+      Object.values(plan)
+        .flatMap((entry) => entry?.meal.ingredients.map((ingredient) => normalizeIngredient(ingredient.name)) ?? [])
+    );
+
+    const scoreMeal = (meal: Meal) => {
+      const normalizedIngredients = meal.ingredients.map((ingredient) => normalizeIngredient(ingredient.name));
+      const estimatedCost = normalizedIngredients.reduce(
+        (sum, ingredient) => sum + (ESTIMATED_INGREDIENT_COST[ingredient] ?? 1.7),
+        0
+      );
+      const overlapCount = normalizedIngredients.filter((ingredient) => plannedIngredients.has(ingredient)).length;
+      const speedBonus = meal.cookTime === "quick" ? 0.5 : meal.cookTime === "medium" ? 0.2 : 0;
+      const easeBonus = meal.difficulty === "easy" ? 0.35 : meal.difficulty === "medium" ? 0.15 : 0;
+
+      return overlapCount * 1.4 + speedBonus + easeBonus - estimatedCost * 0.45;
+    };
+
+    return [...filteredMeals].sort((a, b) => {
+      const scoreDiff = scoreMeal(b) - scoreMeal(a);
+      if (Math.abs(scoreDiff) > 0.01) return scoreDiff;
+      if (a.cookMinutes !== b.cookMinutes) return a.cookMinutes - b.cookMinutes;
+      return a.name.localeCompare(b.name);
+    });
+  }, [filteredMeals, plan]);
+
+  const missingMealTypes = useMemo(() => {
+    return MEAL_TYPES.filter((mealType) => !filteredMeals.some((meal) => meal.mealTypes.includes(mealType)));
+  }, [filteredMeals]);
 
   const handleSlotClick = useCallback((slot: PlanSlot) => {
     setActiveSlot(slot);
@@ -81,6 +133,26 @@ const Index = () => {
     setActiveSlot(null);
   };
 
+  const handleGeneratePlan = useCallback(() => {
+    const byType = MEAL_TYPES.reduce<Record<string, Meal[]>>((acc, mealType) => {
+      acc[mealType] = rankedMeals.filter((meal) => meal.mealTypes.includes(mealType));
+      return acc;
+    }, {});
+
+    const nextPlan: MealPlan = {};
+    MEAL_TYPES.forEach((mealType, typeIndex) => {
+      const list = byType[mealType] ?? [];
+      if (list.length === 0) return;
+      DAYS.forEach((day, dayIndex) => {
+        const meal = list[(dayIndex + typeIndex) % list.length];
+        nextPlan[slotKey(day, mealType)] = { meal, servings: 1 };
+      });
+    });
+
+    setPlan(nextPlan);
+    setActiveSlot(null);
+  }, [rankedMeals]);
+
   const filledCount = Object.values(plan).filter(Boolean).length;
 
   useEffect(() => {
@@ -96,7 +168,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mr-auto px-4 py-4 flex flex-wrap items-center gap-4">
+        <div className="w-full px-6 2xl:px-10 py-4 flex flex-wrap items-center gap-4">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -139,11 +211,17 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mr-auto px-4 py-5">
-        <div className="grid xl:grid-cols-[minmax(0,1fr)_300px] gap-3 items-start">
+      <main className="w-full px-6 2xl:px-10 py-5">
+        <div className="grid 2xl:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_320px] gap-3 items-start">
           <div className="space-y-4 min-w-0">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <CriteriaFilters filters={filters} onChange={setFilters} />
+              <CriteriaFilters
+                filters={filters}
+                onChange={setFilters}
+                onGenerate={handleGeneratePlan}
+                canGenerate={rankedMeals.length > 0}
+                missingMealTypes={missingMealTypes}
+              />
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -165,7 +243,7 @@ const Index = () => {
             className="xl:sticky xl:top-16"
           >
             <MealSuggestions
-              meals={filteredMeals}
+              meals={rankedMeals}
               onSelect={handleSelectMeal}
               activeMealType={activeSlot?.mealType ?? null}
             />

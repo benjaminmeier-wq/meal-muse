@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { CUISINES, DIETARY_OPTIONS, COOK_TIMES, DIFFICULTIES, Dietary, Cuisine, CookTime, Difficulty } from "@/data/meals";
+import type { MealType } from "@/data/meals";
 
 interface Filters {
   dietary: Dietary[];
@@ -11,6 +12,9 @@ interface Filters {
 interface CriteriaFiltersProps {
   filters: Filters;
   onChange: (filters: Filters) => void;
+  onGenerate: () => void;
+  canGenerate: boolean;
+  missingMealTypes: MealType[];
 }
 
 const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
@@ -38,7 +42,13 @@ const FilterSection = ({ title, children }: { title: string; children: React.Rea
 const toggle = <T,>(arr: T[], val: T): T[] =>
   arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
 
-export default function CriteriaFilters({ filters, onChange }: CriteriaFiltersProps) {
+const MEAL_TYPE_LABELS: Record<MealType, string> = {
+  breakfast: "breakfast",
+  lunch: "lunch",
+  dinner: "dinner",
+};
+
+export default function CriteriaFilters({ filters, onChange, onGenerate, canGenerate, missingMealTypes }: CriteriaFiltersProps) {
   return (
     <div className="space-y-5 p-5 bg-card rounded-xl border border-border">
       <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
@@ -68,6 +78,21 @@ export default function CriteriaFilters({ filters, onChange }: CriteriaFiltersPr
           <FilterChip key={d.value} label={d.label} active={filters.difficulties.includes(d.value)} onClick={() => onChange({ ...filters, difficulties: toggle(filters.difficulties, d.value) })} />
         ))}
       </FilterSection>
+
+      {missingMealTypes.length > 0 && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+          No matches for: {missingMealTypes.map((type) => MEAL_TYPE_LABELS[type]).join(", ")}. Try relaxing filters.
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onGenerate}
+        disabled={!canGenerate}
+        className="w-full rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Generate Full Meal Plan
+      </button>
     </div>
   );
 }
