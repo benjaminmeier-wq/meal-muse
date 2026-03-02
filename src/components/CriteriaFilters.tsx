@@ -17,7 +17,7 @@ interface CriteriaFiltersProps {
   missingMealTypes: MealType[];
 }
 
-const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+const FilterChip = ({ label, active, onClick }: { label: React.ReactNode; active: boolean; onClick: () => void }) => (
   <motion.button
     whileHover={{ scale: 1.05 }}
     whileTap={{ scale: 0.95 }}
@@ -48,6 +48,54 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   dinner: "dinner",
 };
 
+const FlagItaly = () => (
+  <svg className="h-3.5 w-5 rounded-[2px] border border-border/40 shadow-sm" viewBox="0 0 36 24" aria-hidden="true">
+    <rect width="12" height="24" x="0" y="0" fill="#1B8E3E" />
+    <rect width="12" height="24" x="12" y="0" fill="#FFFFFF" />
+    <rect width="12" height="24" x="24" y="0" fill="#D6262B" />
+  </svg>
+);
+
+const FlagMexico = () => (
+  <svg className="h-3.5 w-5 rounded-[2px] border border-border/40 shadow-sm" viewBox="0 0 36 24" aria-hidden="true">
+    <rect width="12" height="24" x="0" y="0" fill="#0B7A3E" />
+    <rect width="12" height="24" x="12" y="0" fill="#FFFFFF" />
+    <rect width="12" height="24" x="24" y="0" fill="#C9282D" />
+    <circle cx="18" cy="12" r="2.1" fill="#0B7A3E" />
+    <circle cx="18" cy="12" r="1.1" fill="#B8860B" />
+    <path d="M16.8 11.2 L18 10.2 L19.2 11.2" fill="none" stroke="#5C3A1A" strokeWidth="0.6" strokeLinecap="round" />
+    <path d="M16.2 13.6 C17.2 14.3 18.8 14.3 19.8 13.6" fill="none" stroke="#2E7D32" strokeWidth="0.6" strokeLinecap="round" />
+  </svg>
+);
+
+const FlagUSA = () => (
+  <svg className="h-3.5 w-5 rounded-[2px] border border-border/40 shadow-sm" viewBox="0 0 36 24" aria-hidden="true">
+    <rect width="36" height="24" x="0" y="0" fill="#B22234" />
+    {Array.from({ length: 6 }).map((_, i) => (
+      <rect key={i} width="36" height="2" x="0" y={2 + i * 4} fill="#FFFFFF" />
+    ))}
+    <rect width="16" height="12" x="0" y="0" fill="#3C3B6E" />
+  </svg>
+);
+
+const FlagIndia = () => (
+  <svg className="h-3.5 w-5 rounded-[2px] border border-border/40 shadow-sm" viewBox="0 0 36 24" aria-hidden="true">
+    <rect width="36" height="8" x="0" y="0" fill="#FF9933" />
+    <rect width="36" height="8" x="0" y="8" fill="#FFFFFF" />
+    <rect width="36" height="8" x="0" y="16" fill="#138808" />
+    <circle cx="18" cy="12" r="2" fill="#000080" />
+  </svg>
+);
+
+const cuisineIcon: Record<Cuisine, React.ReactNode> = {
+  italian: <FlagItaly />,
+  mexican: <FlagMexico />,
+  asian: <span className="emoji">🌏</span>,
+  american: <FlagUSA />,
+  mediterranean: <span className="emoji">🏺</span>,
+  indian: <FlagIndia />,
+};
+
 export default function CriteriaFilters({ filters, onChange, onGenerate, canGenerate, missingMealTypes }: CriteriaFiltersProps) {
   return (
     <div className="space-y-5 p-5 bg-card rounded-xl border border-border">
@@ -63,7 +111,17 @@ export default function CriteriaFilters({ filters, onChange, onGenerate, canGene
 
       <FilterSection title="Cuisine">
         {CUISINES.map((c) => (
-          <FilterChip key={c.value} label={`${c.emoji} ${c.label}`} active={filters.cuisines.includes(c.value)} onClick={() => onChange({ ...filters, cuisines: toggle(filters.cuisines, c.value) })} />
+          <FilterChip
+            key={c.value}
+            label={
+              <span className="inline-flex items-center gap-2">
+                {cuisineIcon[c.value]}
+                {c.label}
+              </span>
+            }
+            active={filters.cuisines.includes(c.value)}
+            onClick={() => onChange({ ...filters, cuisines: toggle(filters.cuisines, c.value) })}
+          />
         ))}
       </FilterSection>
 

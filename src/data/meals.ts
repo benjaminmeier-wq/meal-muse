@@ -105,12 +105,12 @@ export type Day = typeof DAYS[number];
 export const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
 
 export const CUISINES: { value: Cuisine; label: string; emoji: string }[] = [
-  { value: "italian", label: "Italian", emoji: "🇮🇹" },
-  { value: "mexican", label: "Mexican", emoji: "🇲🇽" },
-  { value: "asian", label: "Asian", emoji: "🥢" },
-  { value: "american", label: "American", emoji: "🇺🇸" },
-  { value: "mediterranean", label: "Mediterranean", emoji: "🫒" },
-  { value: "indian", label: "Indian", emoji: "🇮🇳" },
+  { value: "italian", label: "Italian", emoji: "\u{1F1EE}\u{1F1F9}" },
+  { value: "mexican", label: "Mexican", emoji: "\u{1F1F2}\u{1F1FD}" },
+  { value: "asian", label: "Asian", emoji: "\u{1F30F}" },
+  { value: "american", label: "American", emoji: "\u{1F1FA}\u{1F1F8}" },
+  { value: "mediterranean", label: "Mediterranean", emoji: "\u{1F3FA}" },
+  { value: "indian", label: "Indian", emoji: "\u{1F1EE}\u{1F1F3}" },
 ];
 
 export const DIETARY_OPTIONS: { value: Dietary; label: string }[] = [
