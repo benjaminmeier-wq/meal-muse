@@ -844,7 +844,7 @@ const Index = () => {
             className="text-2xl md:text-3xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            🥘 Mealwise
+            🥘 Mealio
           </motion.h1>
           <div className="flex flex-wrap items-center gap-3">
             <button
