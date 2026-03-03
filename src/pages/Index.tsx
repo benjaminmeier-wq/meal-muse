@@ -842,7 +842,7 @@ const Index = () => {
           <motion.h1
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-2xl md:text-3xl font-bold"
+            className="text-2xl md:text-3xl font-bold flex items-center gap-3"
             style={{ fontFamily: "var(--font-display)" }}
           >
             <img src={mealioLogo} alt="Mealio" className="h-10 w-10 rounded-full object-cover" />
