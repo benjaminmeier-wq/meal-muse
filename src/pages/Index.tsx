@@ -837,7 +837,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-10 newspaper-bg">
         <div className="w-full px-6 2xl:px-10 py-4 flex flex-wrap items-center gap-4">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}
