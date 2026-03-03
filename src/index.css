@@ -70,6 +70,15 @@
     --input: 20 10% 22%;
     --ring: 16 65% 55%;
   }
+
+  .dark body,
+  .dark .newspaper-bg {
+    background-image: url('/images/newspaper-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-blend-mode: overlay;
+  }
 }
 
 @layer base {
