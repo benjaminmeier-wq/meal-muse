@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import mealioLogo from "@/assets/mealio-logo.png";
 import { motion } from "framer-motion";
 import { BookOpen, Moon, Plus, ShoppingCart, Sun, Upload } from "lucide-react";
 import { meals, Meal, Dietary, Cuisine, CookTime, Difficulty, DAYS, MEAL_TYPES, CUISINES, DIETARY_OPTIONS, COOK_TIMES, DIFFICULTIES } from "@/data/meals";
@@ -844,7 +845,8 @@ const Index = () => {
             className="text-2xl md:text-3xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            🥘 Mealio
+            <img src={mealioLogo} alt="Mealio" className="h-10 w-10 rounded-full object-cover" />
+            Mealio
           </motion.h1>
           <div className="flex flex-wrap items-center gap-3">
             <button
